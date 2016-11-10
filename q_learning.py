@@ -105,6 +105,30 @@ def choose_action(agent):
     return False
 
 
+def play_and_visualize(agent, episodes):
+    agent.explore = 0
+    mean_reward = 0
+    for i in range(episodes):
+        steps = 0
+        game_over = False
+        # start at a random position
+        pos = random.choice(env.starting_positions)
+        agent.reset(pos)
+        env.render(agent.state)
+        print('starting')
+        print('mean reward: {}'.format(mean_reward/i if i > 0 else 0))
+        sleep(1)
+        while not game_over:
+            agent.step()
+            env.render(agent.state)
+            steps += 1
+            print('steps: {}, reward: {}'.format(steps, agent.reward))
+            print('mean reward: {}'.format(mean_reward/i if i > 0 else 0))
+            sleep(0.4)
+            game_over = env.is_terminal_state(agent.state)
+        mean_reward += agent.reward
+        sleep(1)
+
 
 if __name__ == '__main__':
     INTERACTIVE = False
@@ -139,58 +163,28 @@ if __name__ == '__main__':
                 print('{} -> {}'.format(pos, vals))
             i += 1
 
-    elif TRAIN:
-        print('training...')
-        episodes = 500
-        agent.explore = 0.5
-        for i in range(episodes):
-            game_over = False
-            pos = random.choice(env.starting_positions)
-            agent.reset(pos)
-            while not game_over:
-                agent.step()
-                game_over = env.is_terminal_state(agent.state)
-        print('done training')
-
-
-        # let's see how it does
-        print('after training...')
-        agent.explore = 0
-        total_reward = 0
-        for i in range(10):
-            # start at a random position
-            pos = random.choice(env.starting_positions)
-            agent.reset(pos)
-            game_over = False
-            while not game_over:
-                agent.step()
-                game_over = env.is_terminal_state(agent.state)
-            print('reward:', agent.reward)
-            total_reward += agent.reward
-        print('mean reward: {}'.format(total_reward/10))
-
-
     else:
-        print('without training...')
-        agent.explore = 0
-        mean_reward = 0
-        for i in range(10):
-            steps = 0
-            game_over = False
-            # start at a random position
-            pos = random.choice(env.starting_positions)
-            agent.reset(pos)
-            env.render(agent.state)
-            print('starting')
-            print('mean reward: {}'.format(mean_reward/i if i > 0 else 0))
-            sleep(1)
-            while not game_over:
-                agent.step()
-                env.render(agent.state)
-                steps += 1
-                print('steps: {}, reward: {}'.format(steps, agent.reward))
-                print('mean reward: {}'.format(mean_reward/i if i > 0 else 0))
-                sleep(0.4)
-                game_over = env.is_terminal_state(agent.state)
-            mean_reward += agent.reward
-            sleep(1)
+        if TRAIN:
+            print('training...')
+            episodes = 500
+            agent.explore = 0.5
+            for i in range(episodes):
+                game_over = False
+                pos = random.choice(env.starting_positions)
+                agent.reset(pos)
+                while not game_over:
+                    agent.step()
+                    game_over = env.is_terminal_state(agent.state)
+            print('done training')
+
+            # let's see how it does
+            print('after training...')
+            play_and_visualize(agent, 5)
+
+        else:
+            print('without training...')
+            play_and_visualize(agent, 5)
+
+        from policy import PolicyRenderer
+        renderer = PolicyRenderer(agent, env, cell_size=100)
+        renderer.render().save('/tmp/gridworld.png')
