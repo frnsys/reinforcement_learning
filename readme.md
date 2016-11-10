@@ -14,6 +14,6 @@ parts that are covered:
 
 ---
 
-![AlphaGo architecture](dqn_player.png)
+![AlphaGo architecture](dqn_model.png)
 
 ([full paper](http://home.uchicago.edu/~arij/journalclub/papers/2015_Mnih_et_al.pdf))
