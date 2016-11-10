@@ -86,13 +86,13 @@ if __name__ == '__main__':
     from time import sleep
     game = Game()
     agent = Agent(game)
-    fname = '../data/game_weights.h5'
+    fname = 'game_weights.h5'
 
     if os.path.isfile(fname):
         agent.load(fname)
     else:
         print('training...')
-        epochs = 10000
+        epochs = 6000
         batch_size = 256
 
         # keep track of past record_len results
@@ -103,6 +103,7 @@ if __name__ == '__main__':
             game.reset()
             reward = 0
             loss = 0
+            win_rate = 0
             # rewards only given at end of game
             while reward == 0:
                 prev_state = game.state
@@ -117,22 +118,29 @@ if __name__ == '__main__':
                 agent.remember(prev_state, action, new_state, reward)
                 loss += agent.replay(batch_size)
 
+            win_rate = sum(record)/len(record) if record else 0
             sys.stdout.flush()
-            sys.stdout.write('epoch: {:04d}/{} | loss: {:.3f} | win rate: {:.3f}\r'.format(i+1, epochs, loss, sum(record)/len(record) if record else 0))
-
+            sys.stdout.write('epoch: {:04d}/{} | loss: {:.3f} | win rate: {:.3f}\r'.format(i+1, epochs, loss, win_rate))
             record.append(reward if reward == 1 else 0)
 
         agent.save(fname)
 
-    game.reset()
-    game.render()
-    sleep(8)
-    reward = 0
-    while reward == 0:
-        action = agent.choose_action()
-        game.move(action)
-        reward = game.update()
+    wins = 0
+    episodes = 5
+    for i in range(episodes):
+        game.reset()
         game.render()
-        sleep(0.1)
-    print('winner!' if reward == 1 else 'loser!')
-    print('\n\n\n\n\n\n\n\n\n\n\n\n')
+        print('game {}, win rate: {}%'.format(i+1, (wins/i) * 100 if i > 0 else 0))
+        sleep(1)
+        reward = 0
+        while reward == 0:
+            action = agent.choose_action()
+            game.move(action)
+            reward = game.update()
+            game.render()
+            print('game {}, win rate: {}%'.format(i+1, (wins/i) * 100 if i > 0 else 0))
+            sleep(0.1)
+        wins += 1 if reward == 1 else 0
+        print('winner!' if reward == 1 else 'loser!')
+        sleep(1)
+        print('\n\n\n\n\n\n\n\n\n\n\n\n')
