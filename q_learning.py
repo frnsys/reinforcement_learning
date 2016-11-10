@@ -179,6 +179,7 @@ if __name__ == '__main__':
 
             # let's see how it does
             print('after training...')
+            sleep(2)
             play_and_visualize(agent, 5)
 
         else:
